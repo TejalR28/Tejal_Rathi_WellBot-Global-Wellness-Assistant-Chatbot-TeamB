@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WellBot – Global Wellness Assistant</title>
+
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+
+<style>
+
+/* ===== Global Theme ===== */
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #020617, #0f172a, #1e3a8a);
+  background-size: 400% 400%;
+  animation: bgMove 15s ease infinite;
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+@keyframes bgMove {
+  0% {background-position: 0% 50%;}
+  50% {background-position: 100% 50%;}
+  100% {background-position: 0% 50%;}
+}
+
+/* ===== Header ===== */
+header {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+}
+
+/* ===== Card ===== */
+.card {
+  background: rgba(15,23,42,0.75);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 25px;
+  margin-top: 40px;
+  width: 380px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 40px rgba(37,99,235,0.15);
+  animation: fadeIn 0.7s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 60px rgba(59,130,246,0.25);
+}
+
+@keyframes fadeIn {
+  from {opacity:0; transform: translateY(10px);}
+  to {opacity:1; transform: translateY(0);}
+}
+
+/* ===== Inputs ===== */
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: #e5e7eb;
+  font-size: 14px;
+  transition: all 0.25s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59,130,246,0.4);
+}
+
+/* ===== Buttons ===== */
+button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 0 18px rgba(59,130,246,0.5);
+}
+
+/* ===== Dashboard ===== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.widget {
+  background: rgba(255,255,255,0.05);
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.widget:hover {
+  transform: scale(1.05);
+  background: rgba(59,130,246,0.12);
+}
+
+/* ===== Utility ===== */
+.hidden { display: none; }
+
+a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+#msg {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #cbd5f5;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+WellBot Global Wellness Assistant
+</header>
+
+<!-- REGISTER -->
+<div class="card" id="registerPage">
+<h3>Create Account</h3>
+
+<input id="name" placeholder="Full Name">
+<input id="email" placeholder="Email Address">
+<input id="password" type="password" placeholder="Password">
+
+<select id="language">
+<option>English</option>
+<option>Hindi</option>
+<option>Marathi</option>
+</select>
+
+<button onclick="register()">Register</button>
+
+<p>Already registered? <a href="#" onclick="showLogin()">Login</a></p>
+</div>
+
+<!-- LOGIN -->
+<div class="card hidden" id="loginPage">
+<h3>Login</h3>
+
+<input id="lemail" placeholder="Email">
+<input id="lpassword" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+<button onclick="googleLogin()">Continue with Google</button>
+
+<p>New user? <a href="#" onclick="showRegister()">Sign Up</a></p>
+</div>
+
+<!-- DASHBOARD -->
+<div class="card hidden" id="dashboard">
+<h3>Wellness Dashboard</h3>
+
+<p id="welcome"></p>
+<p id="lang"></p>
+
+<div class="dashboard-grid">
+  <div class="widget">Hydration Level: 70%</div>
+  <div class="widget">Stress Status: Low</div>
+  <div class="widget">Activity Score: Moderate</div>
+  <div class="widget">Mood Trend: Positive</div>
+</div>
+
+<br>
+<button onclick="logout()">Logout</button>
+</div>
+
+<p id="msg"></p>
+
+<script>
+
+/* Database */
+function getUsers(){ return JSON.parse(localStorage.getItem("users")) || []; }
+function saveUsers(u){ localStorage.setItem("users", JSON.stringify(u)); }
+
+/* Register */
+async function register(){
+  const n=name.value;
+  const e=email.value;
+  const p=password.value;
+
+  const response = await fetch("http://localhost:1111/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: e, password: p })
+  });
+
+  const data = await response.json();
+
+  if(response.ok){
+    msg.innerText="Registration successful";
+    showLogin();
+  } else {
+    msg.innerText=data.error;
+  }
+}
+
+
+/* Login */
+async function login(){
+  const e = lemail.value;
+  const p = lpassword.value;
+
+  const response = await fetch("http://localhost:1111/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: e, password: p })
+  });
+
+  const data = await response.json();
+
+  if(response.ok){
+    showDashboard({name: e});
+  } else {
+    msg.innerText=data.error;
+  }
+}
+
+
+/* Dashboard */
+function showDashboard(user){
+  registerPage.classList.add("hidden");
+  loginPage.classList.add("hidden");
+  dashboard.classList.remove("hidden");
+
+  welcome.innerText="Welcome, "+user.name;
+  lang.innerText="Preferred Language: "+user.language;
+}
+
+/* Navigation */
+function showLogin(){ registerPage.classList.add("hidden"); loginPage.classList.remove("hidden"); }
+function showRegister(){ loginPage.classList.add("hidden"); registerPage.classList.remove("hidden"); }
+function logout(){ dashboard.classList.add("hidden"); showLogin(); }
+
+/* Google placeholder */
+function googleLogin(){
+  alert("Google OAuth requires backend integration in next milestone.");
+}
+
+</script>
+
+</body>
+</html>
