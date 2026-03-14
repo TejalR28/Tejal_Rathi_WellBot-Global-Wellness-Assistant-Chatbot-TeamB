@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://wellbot-global-wellness-assistant-chatbot.onrender.com';
 
 export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
     const { data: { session } } = await supabase.auth.getSession();
