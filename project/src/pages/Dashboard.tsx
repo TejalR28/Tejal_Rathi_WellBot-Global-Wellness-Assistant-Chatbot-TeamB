@@ -88,7 +88,7 @@ export default function Dashboard() {
         <div className="w-9 h-9 bg-emerald-500 rounded-2xl flex items-center justify-center text-white font-black text-base shadow-lg shadow-emerald-500/20 flex-shrink-0">W</div>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <span className={`text-xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>WellBot</span>
+            <span className={`text-xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>WellBot V2</span>
             <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded">PRO</span>
           </div>
         )}

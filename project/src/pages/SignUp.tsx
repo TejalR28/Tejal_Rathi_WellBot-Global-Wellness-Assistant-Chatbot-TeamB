@@ -21,7 +21,6 @@ export default function SignUp({ onNavigate }: SignUpProps) {
   const languages = [
     { code: 'en', label: 'English', flag: '🇺🇸' },
     { code: 'hi', label: 'हिंदी', flag: '🇮🇳' },
-    { code: 'te', label: 'తెలుగు', flag: '🇮🇳' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
